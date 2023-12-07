@@ -81,10 +81,6 @@ class Schematic:
         result =  next(filter(lambda x: x, map(lambda col: col in symbols_for_row, range(start, end))), False) 
         return result
     
-    def __all_symbols_in_range(self, row, start, end):
-        symbols_for_row = self.symbols.get(row, {})
-        result =  list(filter(lambda x: x, map(lambda col: symbols_for_row.get(col, None), range(start, end))))
-        return result
 
     def __number_is_adjacent_to_symbol(self, number_at_position):
         rows = range(number_at_position.position.y - 1, number_at_position.position.y + 2)
@@ -96,12 +92,6 @@ class Schematic:
             print("End", end)
         return next(filter(lambda b: b, map(lambda row: self.__contains_any_symbol(row, start, end), rows)), False)
     
-    def __all_adjacent_symbols_for_number(self, number_at_position, symbol_match):
-        rows = range(number_at_position.position.y - 1, number_at_position.position.y + 2)
-        start = number_at_position.position.x - 1
-        end = number_at_position.position.x + len(str(number_at_position.number)) + 1
-
-
     def part_numbers(self):
         return map(lambda n: n.number, filter(self.__number_is_adjacent_to_symbol, self.numbers))
     
@@ -110,8 +100,37 @@ class GearRatioAnalyzer:
     
     def __init__(self, schematic):
         self.schematic = schematic
+        self.gear_candidates = {}
 
+    def __all_symbols_in_range(self, row, start, end):
+        symbols_for_row = self.symbols.get(row, {})
+        result =  filter(lambda x: x != None, map(lambda col: symbols_for_row.get(col, None), range(start, end)))
+        return result
     
+    def __matching_symbols_in_range(self, row, start, end, symbol_match):
+        return filter (lambda s: s.symbol == symbol_match, self.__all_symbols_in_range(row, start, end))
+
+    def __all_adjacent_symbols_for_number(self, number_at_position, symbol_match):
+        rows = range(number_at_position.position.y - 1, number_at_position.position.y + 2)
+        start = number_at_position.position.x - 1
+        end = number_at_position.position.x + len(str(number_at_position.number)) + 1
+        matching_adjacent_symbols = []
+        for row in rows:
+            new_gear_candidates_in_row = self.__matching_symbols_in_range(row, start, end, symbol_match)
+            matching_adjacent_symbols.extend(new_gear_candidates_in_row)
+        return matching_adjacent_symbols
+    
+    def __identify_all_adjacent_numbers_for_potential_gears(self):
+        gear_candidates = {}
+        for number in self.schematic.numbers:
+            adjacent_gear_candidates = self.__all_adjacent_symbols_for_number(number, "*")
+            for candidate in adjacent_gear_candidates:
+            
+
+        
+                
+
+        
 
 
 
