@@ -44,7 +44,6 @@ class Schematic:
         matched_lines = map(lambda l: ParsedLine(l), lines)
         numbers = []
         symbols = {}
-        gear_candidates = {}
 
         for row, matched_line in enumerate(matched_lines):
             numbers_for_row = map(lambda m: NumberAtLocation(int(m.group()), row, m.span()[0]), matched_line.number_matches)
@@ -55,20 +54,13 @@ class Schematic:
 
             if symbols_for_row:
                 symbol_dict = {}
-                gear_candidate_dict = {}}
                 for symbol in symbols_for_row:
-                    symbol_dict[symbol.position.x] = symbol.symbol
-                    if symbol.symbol == "*":
-                        if (gear_candidate_dict == None):
-                            gear_candidate_dict = {}
-                        gear_candidate_dict[symbol.position.x] = symbol.symbol
+                    symbol_dict[symbol.position.x] = symbol
             
             symbols[row] = symbol_dict
-            gear_candidates[row] = gear_candidate_dict
 
         self.numbers = numbers
         self.symbols = symbols
-        self.gear_candidates = gear_candidates
 
     def __str__(self):
         return "================= SCHEMATIC ===================\nNumbers: " + str(self.numbers) + "\nSymbols: " + str(self.symbols)
@@ -103,7 +95,7 @@ class GearRatioAnalyzer:
         self.gear_candidates = {}
 
     def __all_symbols_in_range(self, row, start, end):
-        symbols_for_row = self.symbols.get(row, {})
+        symbols_for_row = self.schematic.symbols.get(row, {})
         result =  filter(lambda x: x != None, map(lambda col: symbols_for_row.get(col, None), range(start, end)))
         return result
     
@@ -120,24 +112,29 @@ class GearRatioAnalyzer:
             matching_adjacent_symbols.extend(new_gear_candidates_in_row)
         return matching_adjacent_symbols
     
-    def __identify_all_adjacent_numbers_for_potential_gears(self):
+    def __get_candidate_key(self, x, y):
+        return str(x) + "-" + str(y)
+    
+    def identify_all_adjacent_numbers_for_potential_gears(self):
         gear_candidates = {}
         for number in self.schematic.numbers:
             adjacent_gear_candidates = self.__all_adjacent_symbols_for_number(number, "*")
             for candidate in adjacent_gear_candidates:
-            
-
-        
-                
-
-        
-
-
-
+                candidate_key = self.__get_candidate_key(candidate.position.x, candidate.position.y)
+                adjacent_numbers_for_candidate = gear_candidates.get(candidate_key, [])
+                adjacent_numbers_for_candidate.append(number.number)
+                gear_candidates[candidate_key] = adjacent_numbers_for_candidate
+        return gear_candidates
+    
+    def gears(self):
+        return filter(lambda a: len(a) == 2, iter(self.identify_all_adjacent_numbers_for_potential_gears().values()))
+    
+def gear_ratio(gear):
+    return gear[0] * gear[1]
 
 test_input_lines = aoc_23.load_file("day3_test_input")
-schematic = Schematic(test_input_lines)
-test_sum = sum(schematic.part_numbers())
+test_schematic = Schematic(test_input_lines)
+test_sum = sum(test_schematic.part_numbers())
 print("Test sum ", test_sum)
 
 part_one_input_lines = aoc_23.load_file("day_3_input")
@@ -151,3 +148,10 @@ print(str(list(part_one_first_10_schematic.part_numbers())))
 part_one_schematic = Schematic(part_one_input_lines)
 part_one_sum = sum(part_one_schematic.part_numbers())
 print("Part one sum ", part_one_sum)                                    
+
+part_two_test_analyzer = GearRatioAnalyzer(test_schematic)
+print(list(map(gear_ratio, part_two_test_analyzer.gears())))
+print(sum(map(gear_ratio, part_two_test_analyzer.gears())))
+
+part_two_analyzer = GearRatioAnalyzer(part_one_schematic)
+print(sum(map(gear_ratio, part_two_analyzer.gears())))
