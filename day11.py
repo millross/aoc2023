@@ -28,7 +28,7 @@ class CompensatedImage:
 
 
 # test_image = aoc_23.load_file("day11_test_input")
-test_col_false = ["...", ".#.", "..."]
+test_col_false = ["...#", ".#..", "...#"]
 compensated_image = CompensatedImage(test_col_false)
 assert(compensated_image.col_has_no_galaxies(test_col_false, 0) == True)
 assert(compensated_image.col_has_no_galaxies(test_col_false, 1) == False)
