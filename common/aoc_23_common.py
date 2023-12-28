@@ -1,4 +1,7 @@
 import itertools as it
+import re
+
+NUMBERS_REGEX = "\d+"
 
 def load_file(filename):
     loaded = list()
@@ -20,3 +23,6 @@ def group_with_fixed_size(lines_list, group_size):
             group.append(lines_list[i + j])
         groups.append(group)
     return groups
+
+def extract_numbers_from_string(s):
+    return map(int, re.findall(NUMBERS_REGEX, s))
